@@ -11,26 +11,34 @@ import random
 import geocoder
 import pandas as pd
 
-class ConnectionTest(APIView):
-
-    def get(self, request):
-        return Response({"message": "Test"}, status=status.HTTP_200_OK)
-
 
 class GetLatLongAPI(APIView):
+    """ API to take excel file from post data and geocode through MapQuest to get
+        Latitude and Longitude.
+    """
+
     serializer_class = UploadSerializer
 
     def post(self, request):
         file_suffix = random.randint(100,999)
         file_uploaded = request.FILES.get('file_uploaded')
 
+        file_extension = file_uploaded.name.split(".")[-1]
+
+        # Checking if the file is an excel file
+        if file_extension not in ['xlsx', 'xls']:
+            return Response({"message": 'Please upload excel files only'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Saving excel file to media folder
         file_path = f'{str(settings.MEDIA_ROOT)}/Location_{file_suffix}.xlsx'
         with open(file_path, 'wb+') as destination:
             for chunk in file_uploaded.chunks():
                 destination.write(chunk)
         
+        # Using Pandas to open and manipulate excel data
         df = pd.read_excel(file_path)
         
+        # File integrity checks
         if df.columns[0] != 'Places':
             os.remove(file_path)
             return Response({"message": 'The uploaded file should have "Places" as first column'}, status=status.HTTP_400_BAD_REQUEST)
@@ -39,11 +47,10 @@ class GetLatLongAPI(APIView):
             os.remove(file_path)
             return Response({"message": 'The uploaded file should have a single column "Places"'}, status=status.HTTP_400_BAD_REQUEST)
         
-        print(df.columns[0])
-        print(df.shape[1])
-
         locations = df['Places'].tolist()
-        g = geocoder.mapquest(location=locations, method='batch', key='j0paRAfw1XI6k0MpkGG1okNyVPQoqjfR')
+
+        # Getting geocoded data from MapQuest API
+        g = geocoder.mapquest(location=locations, method='batch', key='MAPQUEST_SECRETE_KEY')
         latitudes = []
         longitudes = []
 
@@ -51,11 +58,13 @@ class GetLatLongAPI(APIView):
             latitudes.append(result.lat)
             longitudes.append(result.lng)
 
+        # Setting new columns for latitudes and longitudes in pandas dataframe
         df['Latitude'] = latitudes
         df['Longitude'] = longitudes
         
         output_filename = f'output_{file_suffix}.xlsx'
         output_file_path = f'{str(settings.MEDIA_ROOT)}/output'
+        # saving new excel file in media/output folder
         df.to_excel(f'{output_file_path}/{output_filename}', index=False, header=True)
         os.remove(file_path)
         
