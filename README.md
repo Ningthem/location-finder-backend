@@ -3,7 +3,11 @@
 This API accepts an excel file with one or more physical addresses and returns another excel file with its corresponding Latitude and Longitudes. Django Rest Framework is used to serve the backend APIs.
 
 ## Live Working App
-Please visit the [link](https://frontend-theta-six.vercel.app/) to check the actual working of the app. The frontend is built on React and hosted on [Vercel](https://vercel.com/) and the backend is hosted on [PythonAnyWhere](https://www.pythonanywhere.com/)
+Please visit the [link](https://frontend-theta-six.vercel.app/) to check the actual working of the app. The frontend is built on React and hosted on [Vercel](https://vercel.com/) and the backend is hosted on [PythonAnyWhere](https://www.pythonanywhere.com/). 
+
+Demo Login 
+Email: sam@email.com   
+Password: 151
 
 ## Main Libraries or Frameworks Used
 Django, Django Rest Framework, Django Knox Authentication, Geocoder, Pandas
